@@ -1,14 +1,27 @@
 const express = require("express")
 const { v4 : uuidv4 } = require('uuid');
 const app = express()
+const Joi = require('joi');
+
 
 app.use(express.json())
 
 const Users = []
 const Login = []
 
+ 
+const schema = Joi.object({
+    login: Joi.string().required("login is required"),
+    password: Joi.string().regex(/^[a-zA-Z0-9]{3,30}$/).required("password is required"),
+    age: Joi.number().max(130).min(4).required("age is required"),
+    })
+
 app.post("/user", (req,res) => {
     console.log(req)
+    const {error,value} = schema.validate(req.body)
+    if(error) {
+        return res.status(400).json({error:error.details[0].message})
+    }
     const {login,password,age} = req.body
     const newUser = {
         id:uuidv4(),
